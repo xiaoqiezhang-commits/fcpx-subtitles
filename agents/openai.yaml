@@ -1,0 +1,4 @@
+interface:
+  display_name: "FCPX Subtitles"
+  short_description: "Create validated bilingual Final Cut subtitle XML"
+  default_prompt: "Use $fcpx-subtitles to create and validate separate Chinese and English FCPXML subtitles."
