@@ -88,6 +88,25 @@ class GeneratorTests(unittest.TestCase):
             self.assertEqual(en_root.find(".//title/adjust-transform").get("position"), "0 -8.5")
             self.assertIsNone(zh_root.find(".//title/adjust-transform"))
 
+    def test_generates_fcpx_compatible_basic_title_structure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            zh, en = self.build_valid(folder)
+            for path, has_adjust in ((zh, False), (en, True)):
+                root = ET.parse(path).getroot()
+                effect = root.find("./resources/effect")
+                self.assertEqual(
+                    effect.get("uid"),
+                    ".../Titles.localized/Bumper:Opener.localized/Basic Title.localized/Basic Title.moti",
+                )
+                titles = root.findall(".//title")
+                style_ids = [title.find("text-style-def").get("id") for title in titles]
+                self.assertEqual(style_ids, ["ts1", "ts2"])
+                for title in titles:
+                    child_tags = [child.tag for child in title]
+                    self.assertEqual(child_tags[:3], ["param", "param", "text"])
+                    self.assertEqual(child_tags[3], "text-style-def")
+                    self.assertEqual(child_tags[-1] == "adjust-transform", has_adjust)
+
     def test_rejects_multiline_cards(self):
         with tempfile.TemporaryDirectory() as folder:
             source = Path(folder) / "bad.tsv"

@@ -19,7 +19,7 @@ FPS = {
     "60": Fraction(1, 60),
 }
 FORBIDDEN = re.compile(r"[，。！？；：、,.!?;:\"“”‘’（）()【】\[\]《》<>…—]")
-TITLE_EFFECT = "~/Titles.localized/Bumper:Opener.localized/Basic Title.localized/Basic Title.moti"
+TITLE_EFFECT = ".../Titles.localized/Bumper:Opener.localized/Basic Title.localized/Basic Title.moti"
 
 
 def fail(message):
@@ -95,22 +95,24 @@ def make_document(rows, language, args, frame_duration):
     position = args.position_zh if language == "zh" else args.position_en
     adjust = args.adjust_zh if language == "zh" else args.adjust_en
     for index, row in enumerate(rows, 1):
+        style_id = f"ts{index}"
         title = ET.SubElement(
             gap, "title", name=f"Card {index:03d}", lane="1", offset=fcptime(row["start"]),
             ref="r2", start="0s", duration=fcptime(row["end"] - row["start"]),
         )
-        if adjust:
-            ET.SubElement(title, "adjust-transform", position=adjust)
+        ET.SubElement(title, "param", name="Position", key="9999/999166631/999166633/1/100/101", value=position)
+        ET.SubElement(title, "param", name="Alignment", key="9999/999166631/999166633/2/354/999169573/401", value="1 (Center)")
         text = ET.SubElement(title, "text")
-        style = ET.SubElement(text, "text-style", ref="ts1")
+        style = ET.SubElement(text, "text-style", ref=style_id)
         style.text = row[language]
         ET.SubElement(
-            title, "text-style-def", id="ts1"
+            title, "text-style-def", id=style_id
         ).append(ET.Element(
             "text-style", font=args.font_family, fontFace=args.font_face,
-            fontSize=str(args.font_size), fontColor="1 1 1 1", alignment="center",
+            fontSize=f"{args.font_size:g}", fontColor="1 1 1 1", alignment="center",
         ))
-        ET.SubElement(title, "param", name="Position", key="9999/999166631/999166633/1/100/101", value=position)
+        if adjust:
+            ET.SubElement(title, "adjust-transform", position=adjust)
     ET.indent(root, space="  ")
     return ET.ElementTree(root)
 
